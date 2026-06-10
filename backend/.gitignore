@@ -1,0 +1,35 @@
+# Binary files
+bin/
+main
+*.exe
+*.exe_
+*.dll
+*.so
+*.dylib
+
+# Test coverage
+*.out
+*.test
+
+# Environment files
+.env
+*.env
+.env.*
+!.env.example
+
+# Air (Live Reload)
+tmp/
+backend/tmp/*
+
+# Go modules vendor
+vendor/
+
+# IDE settings
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
