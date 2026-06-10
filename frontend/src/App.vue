@@ -1,5 +1,7 @@
-<template>
-  <div class="bg-red-50">
-    Heello World
-  </div>
+<script setup>
+import { RouterView } from 'vue-router'
+</script>
+
+<template lang="html">
+  <RouterView />
 </template>
