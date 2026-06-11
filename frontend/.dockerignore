@@ -1,0 +1,38 @@
+# Dependencies
+node_modules
+.bun-cache
+bun.lockb
+
+# Build outputs
+dist
+build
+.next
+.nuxt
+out
+
+# Environment variables (Security)
+.env
+.env.*
+!.env.example
+
+# Docker configuration
+Dockerfile*
+.dockerignore
+docker-compose*
+
+# Version control & IDEs
+.git
+.gitignore
+.vscode
+.idea
+*.suo
+*.ntvs
+*.njsproj
+
+# Documentation & Logs
+README.md
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+bun-debug.log*

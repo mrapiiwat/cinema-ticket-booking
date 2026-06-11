@@ -55,9 +55,11 @@ func ConnectDB() {
 		log.Fatal("REDIS_ADDR environment variable is required")
 	}
 
+	redisPassword := os.Getenv("REDIS_PASSWORD")
+
 	rdb := redis.NewClient(&redis.Options{
 		Addr:     redisAddr,
-		Password: "",
+		Password: redisPassword,
 		DB:       0,
 	})
 

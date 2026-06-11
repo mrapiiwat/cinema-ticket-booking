@@ -1,0 +1,42 @@
+# Git
+.git
+.gitignore
+
+# Go build output
+bin/
+build/
+dist/
+tmp/
+
+# Air temp files
+.air.tmp
+tmp/
+
+# Dependencies
+vendor/
+
+# OS / Editor files
+.DS_Store
+*.swp
+*.swo
+*.log
+
+# Environment files (กัน secret หลุดเข้า image)
+.env
+.env.*
+!.env.example
+
+# Test / coverage
+coverage.out
+
+# Node (ถ้ามี tool hybrid)
+node_modules/
+
+# Docker
+Dockerfile
+docker-compose*.yml
+docker-compose*.yaml
+
+# IDE
+.vscode/
+.idea/
