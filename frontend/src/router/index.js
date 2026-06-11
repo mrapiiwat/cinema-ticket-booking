@@ -6,13 +6,12 @@ const router = createRouter({
     // Public routes
     {
       path: '/',
-      name: 'home',
-      component: () => import('../views/HomeView.vue'),
+      redirect: '/login',
     },
     {
       path: '/login',
       name: 'login',
-      component: () => import('../views/LoginView.vue'),
+      component: () => import('../views/auth/LoginView.vue'),
     },
 
     // User routes
@@ -24,8 +23,48 @@ const router = createRouter({
           path: '',
           name: 'movies',
           component: () => import('../views/user/MoviesView.vue'),
-        }
-      ]
+        },
+        {
+          path: 'booking/:movieId',
+          name: 'booking',
+          component: () => import('../views/user/BookingView.vue'),
+        },
+        {
+          path: 'payment',
+          name: 'payment',
+          component: () => import('../views/user/PaymentView.vue'),
+          beforeEnter: (_to, from, next) => {
+            if (from.name === 'booking') {
+              next()
+            } else {
+              next({ name: 'movies' })
+            }
+          },
+        },
+        {
+          path: 'history',
+          name: 'history',
+          component: () => import('../views/user/HistoryView.vue'),
+        },
+      ],
+    },
+
+    // Admin routes
+    {
+      path: '/admin',
+      component: () => import('../layouts/AdminLayout.vue'),
+      children: [
+        {
+          path: '',
+          name: 'admin-dashboard',
+          component: () => import('../views/admin/DashboardView.vue'),
+        },
+        {
+          path: 'audit-logs',
+          name: 'admin-logs',
+          component: () => import('../views/admin/AuditLogsView.vue'),
+        },
+      ],
     },
   ],
 })

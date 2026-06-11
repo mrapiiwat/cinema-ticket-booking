@@ -13,8 +13,9 @@ import (
 
 func main() {
 	e := echo.New()
-	
+
 	database.ConnectDB()
+	database.ConnectMinio()
 
 	e.Use(middleware.RequestLoggerWithConfig(middleware.RequestLoggerConfig{
 		LogStatus:   true,
@@ -33,7 +34,7 @@ func main() {
 			return nil
 		},
 	}))
-	
+
 	e.Use(middleware.Recover())
 
 	container := registry.NewContainer(database.MongoDB)

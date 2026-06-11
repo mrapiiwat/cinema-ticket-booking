@@ -76,10 +76,27 @@ services:
       - cinema_network
     volumes:
       - redis_data:/data
+    
+  minio:
+    image: minio/minio
+    container_name: minio
+    restart: unless-stopped
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    command: server /data --console-address ":9001"
+    volumes:
+      - minio_data:/data
+    networks:
+      - cinema_network
 
 volumes:
   mongo_data:
   redis_data:
+  minio_data:
 
 networks:
   cinema_network:
