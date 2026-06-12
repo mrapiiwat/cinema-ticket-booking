@@ -15,5 +15,10 @@ func SetupRoutes(app *echo.Echo, container *Container) {
 	})
 
 	routes.MapAuthRoutes(api, container.AuthHandler)
+	routes.MapMovieRoutes(api, container.MovieHandler)
+	routes.MapShowtimeRoutes(api, container.ShowtimeHandler)
+	routes.MapBookingRoutes(api, container.BookingHandler)
+	routes.MapAdminRoutes(api, container.AdminHandler)
+	routes.MapWSRoutes(api, container.WSHandler)
 
 }

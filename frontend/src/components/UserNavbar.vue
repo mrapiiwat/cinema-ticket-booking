@@ -30,14 +30,7 @@
         <div
           class="w-7 h-7 rounded-full bg-stone-100 flex items-center justify-center overflow-hidden border border-stone-200 shrink-0"
         >
-          <img v-if="user.avatar" :src="user.avatar" class="w-full h-full object-cover" />
-          <svg
-            v-else
-            class="w-4 h-4 text-stone-400"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
+          <svg class="w-4 h-4 text-stone-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
               stroke-linecap="round"
               stroke-linejoin="round"
@@ -46,7 +39,7 @@
             />
           </svg>
         </div>
-        <span class="text-sm text-stone-600 font-medium hidden sm:block">{{ user.name }}</span>
+        <span class="text-sm text-stone-600 font-medium hidden sm:block">{{ user?.name }}</span>
 
         <svg
           class="w-3 h-3 text-stone-400 hidden sm:block transition-transform duration-200"
@@ -77,7 +70,7 @@
           class="absolute right-0 mt-2 w-48 bg-white border border-stone-100 rounded-xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] z-50 py-1.5 overflow-hidden"
         >
           <div class="px-4 py-2 border-b border-stone-50 sm:hidden mb-1">
-            <p class="text-sm font-medium text-stone-800">{{ user.name }}</p>
+            <p class="text-sm font-medium text-stone-800">{{ user?.name }}</p>
           </div>
 
           <button
@@ -125,14 +118,11 @@
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { clearSession, getSession } from '../api/client'
 
 const router = useRouter()
 
-const user = ref({
-  name: 'John Doe',
-  avatar: '',
-})
-
+const user = ref(getSession()?.user || { name: 'Guest' })
 const isOpen = ref(false)
 
 const goToHistory = () => {
@@ -142,7 +132,7 @@ const goToHistory = () => {
 
 const handleLogout = () => {
   isOpen.value = false
-  // TODO: ใส่ Logic เคลียร์ Token หรือ Session ตรงนี้
-  console.log('Logging out...')
+  clearSession()
+  router.push({ name: 'login' })
 }
 </script>

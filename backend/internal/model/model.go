@@ -6,6 +6,19 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
+const (
+	RoleUser  = "USER"
+	RoleAdmin = "ADMIN"
+
+	SeatStatusAvailable = "AVAILABLE"
+	SeatStatusLocked    = "LOCKED"
+	SeatStatusBooked    = "BOOKED"
+
+	BookingStatusPending = "PENDING"
+	BookingStatusSuccess = "SUCCESS"
+	BookingStatusTimeout = "TIMEOUT"
+)
+
 // 1. User: โครงสร้างข้อมูลผู้ใช้งาน (Collection: users)
 type User struct {
 	ID        primitive.ObjectID `bson:"_id,omitempty" json:"id"`
@@ -44,13 +57,17 @@ type Showtime struct {
 
 // 5. Booking: โครงสร้างข้อมูลประวัติการจอง (Collection: bookings)
 type Booking struct {
-	ID         primitive.ObjectID `bson:"_id,omitempty" json:"id"`
-	ShowtimeID primitive.ObjectID `bson:"showtime_id" json:"showtime_id"`
-	UserID     string             `bson:"user_id" json:"user_id"`
-	Seats      []string           `bson:"seats" json:"seats"`
-	TotalPrice float64            `bson:"total_price" json:"total_price"`
-	Status     string             `bson:"status" json:"status"` // PENDING, SUCCESS, TIMEOUT
-	CreatedAt  time.Time          `bson:"created_at" json:"created_at"`
+	ID            primitive.ObjectID `bson:"_id,omitempty" json:"id"`
+	ShowtimeID    primitive.ObjectID `bson:"showtime_id" json:"showtime_id"`
+	UserID        string             `bson:"user_id" json:"user_id"`
+	Seats         []string           `bson:"seats" json:"seats"`
+	TotalPrice    float64            `bson:"total_price" json:"total_price"`
+	Status        string             `bson:"status" json:"status"` // PENDING, SUCCESS, TIMEOUT
+	LockToken     string             `bson:"lock_token,omitempty" json:"-"`
+	LockExpiresAt time.Time          `bson:"lock_expires_at,omitempty" json:"lock_expires_at,omitempty"`
+	ConfirmedAt   *time.Time         `bson:"confirmed_at,omitempty" json:"confirmed_at,omitempty"`
+	CreatedAt     time.Time          `bson:"created_at" json:"created_at"`
+	UpdatedAt     time.Time          `bson:"updated_at" json:"updated_at"`
 }
 
 // 6. AuditLog: โครงสร้างข้อมูลบันทึกประวัติเหตุการณ์สำคัญ (Collection: audit_logs)
@@ -60,4 +77,15 @@ type AuditLog struct {
 	Details   string             `bson:"details" json:"details"`
 	UserID    string             `bson:"user_id,omitempty" json:"user_id,omitempty"`
 	Timestamp time.Time          `bson:"timestamp" json:"timestamp"`
+}
+
+type AuthResponse struct {
+	Token string `json:"token"`
+	User  *User  `json:"user"`
+}
+
+type BookingFilter struct {
+	UserID     string
+	ShowtimeID string
+	Status     string
 }

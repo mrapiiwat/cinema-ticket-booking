@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -15,7 +16,6 @@ func main() {
 	e := echo.New()
 
 	database.ConnectDB()
-	database.ConnectMinio()
 
 	e.Use(middleware.RequestLoggerWithConfig(middleware.RequestLoggerConfig{
 		LogStatus:   true,
@@ -36,8 +36,22 @@ func main() {
 	}))
 
 	e.Use(middleware.Recover())
+	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
+		AllowOrigins: corsOrigins(),
+		AllowMethods: []string{
+			echo.GET,
+			echo.POST,
+			echo.PUT,
+			echo.DELETE,
+			echo.OPTIONS,
+		},
+		AllowHeaders: []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept, echo.HeaderAuthorization},
+	}))
 
 	container := registry.NewContainer(database.MongoDB)
+	if err := database.SeedDefaults(e.Logger); err != nil {
+		log.Fatalf("Failed to seed defaults: %v", err)
+	}
 	registry.SetupRoutes(e, container)
 
 	port := os.Getenv("PORT")
@@ -49,4 +63,21 @@ func main() {
 	if err := e.Start(":" + port); err != nil {
 		log.Fatalf("Failed to run Echo server: %v", err)
 	}
+}
+
+func corsOrigins() []string {
+	raw := os.Getenv("CORS_ORIGINS")
+	if raw == "" {
+		return []string{"http://localhost", "http://localhost:5173", "http://127.0.0.1:5173"}
+	}
+
+	parts := strings.Split(raw, ",")
+	origins := make([]string, 0, len(parts))
+	for _, part := range parts {
+		origin := strings.TrimSpace(part)
+		if origin != "" {
+			origins = append(origins, origin)
+		}
+	}
+	return origins
 }

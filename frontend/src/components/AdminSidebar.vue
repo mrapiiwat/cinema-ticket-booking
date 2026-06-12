@@ -91,13 +91,12 @@
 
 <script setup>
 import { useRouter } from 'vue-router'
+import { clearSession } from '../api/client'
 
 const router = useRouter()
 
 const handleLogout = () => {
-  // TODO: เพิ่ม Logic การลบ Token หรือเคลียร์ Session ของ Admin ตรงนี้ในภายหลัง
-
-  // เตะกลับไปหน้า Login
+  clearSession()
   router.push({ name: 'login' })
 }
 </script>

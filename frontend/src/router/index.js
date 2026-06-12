@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import { getSession } from '../api/client'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -18,6 +19,7 @@ const router = createRouter({
     {
       path: '/user',
       component: () => import('../layouts/UserLayout.vue'),
+      meta: { requiresAuth: true, role: 'USER' },
       children: [
         {
           path: '',
@@ -33,13 +35,6 @@ const router = createRouter({
           path: 'payment',
           name: 'payment',
           component: () => import('../views/user/PaymentView.vue'),
-          beforeEnter: (_to, from, next) => {
-            if (from.name === 'booking') {
-              next()
-            } else {
-              next({ name: 'movies' })
-            }
-          },
         },
         {
           path: 'history',
@@ -53,6 +48,7 @@ const router = createRouter({
     {
       path: '/admin',
       component: () => import('../layouts/AdminLayout.vue'),
+      meta: { requiresAuth: true, role: 'ADMIN' },
       children: [
         {
           path: '',
@@ -67,6 +63,18 @@ const router = createRouter({
       ],
     },
   ],
+})
+
+router.beforeEach((to) => {
+  const matched = to.matched.find((record) => record.meta.requiresAuth)
+  if (!matched) return true
+
+  const session = getSession()
+  if (!session?.token) return { name: 'login' }
+  if (matched.meta.role === 'ADMIN' && session.user?.role !== 'ADMIN') {
+    return { name: 'movies' }
+  }
+  return true
 })
 
 export default router
