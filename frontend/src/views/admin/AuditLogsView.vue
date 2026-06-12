@@ -2,7 +2,14 @@
   <main class="p-8 max-w-7xl w-full mx-auto">
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
       <div>
-        <h2 class="text-lg font-semibold text-stone-800">System Logs</h2>
+        <div class="flex items-center gap-2">
+          <h2 class="text-lg font-semibold text-stone-800">System Logs</h2>
+          <span class="flex h-2 w-2 relative">
+            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+            <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+          </span>
+          <span class="text-[10px] text-emerald-600 font-medium uppercase tracking-wider">Live</span>
+        </div>
         <p class="text-sm text-stone-500 mt-1">Track booking, timeout, release, and system events.</p>
       </div>
       <button
@@ -84,13 +91,14 @@
 </template>
 
 <script setup>
-import { computed, onMounted, ref } from 'vue'
-import { apiFetch } from '../../api/client'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
+import { apiFetch, websocketUrl } from '../../api/client'
 
 const isRefreshing = ref(false)
 const logs = ref([])
 const error = ref('')
 const filters = ref({ search: '', type: '' })
+let socket = null
 
 const filteredLogs = computed(() => {
   return logs.value.filter((log) => {
@@ -127,5 +135,39 @@ const refreshLogs = async () => {
   }
 }
 
-onMounted(refreshLogs)
+const handleLiveLogs = (message) => {
+  if (message.type === 'AUDIT_LOG' || message.payload?.log) {
+    const newLog = message.payload.log
+    logs.value.unshift(newLog) 
+  } else if (message.type === 'SEAT_UPDATED') {
+    logs.value.unshift({
+      id: crypto.randomUUID(),
+      timestamp: new Date().toISOString(),
+      event_type: message.payload?.seats[0]?.status === 'LOCKED' ? 'SEAT_LOCKED' : 'SEAT_RELEASED',
+      user_id: message.payload?.seats[0]?.locked_by || 'system',
+      details: `Seats ${message.payload?.seats.map(s => s.seat_no).join(', ')} status changed.`
+    })
+  }
+}
+
+const connectWebSocket = () => {
+  socket?.close()
+  socket = new WebSocket(websocketUrl())
+  socket.onmessage = (event) => {
+    try {
+      handleLiveLogs(JSON.parse(event.data))
+    } catch (err) {
+      console.error('WS Error:', err)
+    }
+  }
+}
+
+onMounted(async () => {
+  await refreshLogs()
+  connectWebSocket()
+})
+
+onUnmounted(() => {
+  socket?.close()
+})
 </script>

@@ -2,17 +2,28 @@
   <div class="min-h-screen bg-stone-50 flex">
     <div class="flex-1 flex flex-col min-w-0">
       <main class="flex-1 p-8 overflow-y-auto max-w-7xl w-full mx-auto">
+        <div class="flex justify-between items-center mb-6">
+          <div class="flex items-center gap-2">
+            <h1 class="text-xl font-semibold text-stone-800">Admin Dashboard</h1>
+            <span class="flex h-2 w-2 relative">
+              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+              <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+            </span>
+            <span class="text-[10px] text-emerald-600 font-medium uppercase tracking-wider">Live Stats</span>
+          </div>
+        </div>
+
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-5 mb-8">
           <div class="bg-white border border-stone-100 rounded-2xl p-5 shadow-sm">
-            <p class="text-xs text-stone-400 uppercase tracking-wider mb-1">Total Revenue</p>
+            <p class="text-xs text-stone-400 tracking-wider mb-1">TOTAL REVENUE</p>
             <p class="text-2xl font-semibold text-stone-800">฿{{ stats.revenue.toLocaleString() }}</p>
           </div>
           <div class="bg-white border border-stone-100 rounded-2xl p-5 shadow-sm">
-            <p class="text-xs text-stone-400 uppercase tracking-wider mb-1">Confirmed Bookings</p>
+            <p class="text-xs text-stone-400 tracking-wider mb-1">CONFIRMED BOOKINGS</p>
             <p class="text-2xl font-semibold text-emerald-700">{{ stats.confirmedCount }} <span class="text-xs font-normal text-stone-400">orders</span></p>
           </div>
           <div class="bg-white border border-stone-100 rounded-2xl p-5 shadow-sm">
-            <p class="text-xs text-amber-600 uppercase tracking-wider mb-1">Active Redis Locks</p>
+            <p class="text-xs text-amber-600 tracking-wider mb-1">ACTIVE REDIS LOCKS</p>
             <p class="text-2xl font-semibold text-amber-700">{{ stats.activeLocks }} <span class="text-xs font-normal text-amber-500">holding</span></p>
           </div>
         </div>
@@ -41,7 +52,7 @@
           </div>
 
           <button @click="loadBookings" class="px-4 py-2 bg-stone-900 text-white rounded-xl text-sm font-medium hover:bg-stone-700 transition-colors">
-            Refresh
+            Force Refresh
           </button>
         </div>
 
@@ -101,12 +112,13 @@
 </template>
 
 <script setup>
-import { computed, onMounted, ref } from 'vue'
-import { apiFetch } from '../../api/client'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
+import { apiFetch, websocketUrl } from '../../api/client'
 
 const filters = ref({ search: '', status: '' })
 const bookings = ref([])
 const error = ref('')
+let socket = null
 
 const stats = computed(() => {
   return bookings.value.reduce(
@@ -148,5 +160,38 @@ const loadBookings = async () => {
   }
 }
 
-onMounted(loadBookings)
+const applyLiveBookingUpdates = (message) => {
+  if (message.type === 'BOOKING_UPDATED' || message.type === 'BOOKING_CREATED') {
+    const updatedBooking = message.payload?.booking
+    if (!updatedBooking) return
+
+    const index = bookings.value.findIndex((b) => b.id === updatedBooking.id)
+    if (index !== -1) {
+      bookings.value[index] = updatedBooking
+    } else {
+      bookings.value.unshift(updatedBooking)
+    }
+  }
+}
+
+const connectWebSocket = () => {
+  socket?.close()
+  socket = new WebSocket(websocketUrl())
+  socket.onmessage = (event) => {
+    try {
+      applyLiveBookingUpdates(JSON.parse(event.data))
+    } catch (err) {
+      console.error(err)
+    }
+  }
+}
+
+onMounted(async () => {
+  await loadBookings()
+  connectWebSocket()
+})
+
+onUnmounted(() => {
+  socket?.close()
+})
 </script>

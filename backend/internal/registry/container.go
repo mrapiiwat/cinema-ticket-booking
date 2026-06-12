@@ -36,7 +36,7 @@ func NewContainer(db *mongo.Database) *Container {
 	bookingService := services.NewBookingService(bookingRepo, showtimeRepo, lockRepo, mqRepo, wsHub)
 
 	go wsHub.Run()
-	go services.StartAuditLogConsumer(mqRepo, auditService)
+	go services.StartAuditLogConsumer(mqRepo, auditService, wsHub)
 	go bookingService.StartExpirationWorker(context.Background())
 
 	authHandler := handlers.NewAuthHandler(authService)
