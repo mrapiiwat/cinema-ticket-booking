@@ -32,9 +32,9 @@ func SeedDefaults(logger seedLogger) error {
 	}
 
 	movies := []model.Movie{
-		{Title: "Dune: Part Two", DurationMins: 166, PosterURL: "", CreatedAt: time.Now()},
-		{Title: "Oppenheimer", DurationMins: 180, PosterURL: "", CreatedAt: time.Now()},
-		{Title: "Past Lives", DurationMins: 106, PosterURL: "", CreatedAt: time.Now()},
+		{Title: "Dune: Part Two", DurationMins: 166, PosterURL: "https://i.redd.it/99a79xg2yfxa1.jpg", CreatedAt: time.Now()},
+		{Title: "Oppenheimer", DurationMins: 180, PosterURL: "https://upload.wikimedia.org/wikipedia/donate/5/5b/Oppenheimer_poster.jpg?utm_source=donate.wikimedia.org&utm_campaign=index&utm_content=original", CreatedAt: time.Now()},
+		{Title: "Spider-Man: No Way Home", DurationMins: 148, PosterURL: "https://m.media-amazon.com/images/S/pv-target-images/0a76c4a1044229d184bb09480b314150340ee8c45de8365c062a6e0f20201614.jpg", CreatedAt: time.Now()},
 	}
 
 	movieDocs := make([]interface{}, 0, len(movies))
