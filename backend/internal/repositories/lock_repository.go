@@ -20,7 +20,6 @@ func NewLockRepository() ports.LockRepositoryPort {
 }
 
 func (r *lockRepository) AcquireLock(ctx context.Context, key string, value string, expiration time.Duration) (bool, error) {
-	// SetNX (SET if Not eXists) is the core of Redis distributed lock
 	// It will only set the key if it does not already exist
 	// Returns true if the key was set, false if it already existed
 	ok, err := r.client.SetNX(ctx, key, value, expiration).Result()
@@ -31,7 +30,7 @@ func (r *lockRepository) AcquireLock(ctx context.Context, key string, value stri
 }
 
 func (r *lockRepository) ReleaseLock(ctx context.Context, key string, value string) error {
-	// We use Lua script to atomically check if the lock belongs to us before deleting it
+	// Use Lua script to atomically check if the lock belongs to us before deleting it
 	script := redis.NewScript(`
 		if redis.call("get", KEYS[1]) == ARGV[1] then
 			return redis.call("del", KEYS[1])

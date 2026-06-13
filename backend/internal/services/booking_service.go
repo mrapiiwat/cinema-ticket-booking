@@ -41,6 +41,35 @@ func NewBookingService(
 	}
 }
 
+func normalizeSeats(seats []string) []string {
+	unique := map[string]bool{}
+	for _, seat := range seats {
+		value := strings.ToUpper(strings.TrimSpace(seat))
+		if value != "" {
+			unique[value] = true
+		}
+	}
+
+	result := make([]string, 0, len(unique))
+	for seat := range unique {
+		result = append(result, seat)
+	}
+	sort.Strings(result)
+	return result
+}
+
+func lockKey(showtimeID string, seatNo string) string {
+	return fmt.Sprintf("lock:showtime:%s:seat:%s", showtimeID, seatNo)
+}
+
+func randomToken() (string, error) {
+	bytes := make([]byte, 16)
+	if _, err := rand.Read(bytes); err != nil {
+		return "", err
+	}
+	return hex.EncodeToString(bytes), nil
+}
+
 func (s *bookingService) LockSeats(ctx context.Context, showtimeID string, requestedSeats []string, userID string) (*model.Booking, error) {
 	seats := normalizeSeats(requestedSeats)
 	if len(seats) == 0 {
@@ -285,23 +314,6 @@ func (s *bookingService) broadcastSeats(showtimeID string, seats []string, statu
 	})
 }
 
-func normalizeSeats(seats []string) []string {
-	unique := map[string]bool{}
-	for _, seat := range seats {
-		value := strings.ToUpper(strings.TrimSpace(seat))
-		if value != "" {
-			unique[value] = true
-		}
-	}
-
-	result := make([]string, 0, len(unique))
-	for seat := range unique {
-		result = append(result, seat)
-	}
-	sort.Strings(result)
-	return result
-}
-
 func validateRequestedSeats(showtime *model.Showtime, requested []string) error {
 	bySeat := map[string]model.Seat{}
 	for _, seat := range showtime.Seats {
@@ -324,16 +336,4 @@ func validateRequestedSeats(showtime *model.Showtime, requested []string) error 
 		}
 	}
 	return nil
-}
-
-func lockKey(showtimeID string, seatNo string) string {
-	return fmt.Sprintf("lock:showtime:%s:seat:%s", showtimeID, seatNo)
-}
-
-func randomToken() (string, error) {
-	bytes := make([]byte, 16)
-	if _, err := rand.Read(bytes); err != nil {
-		return "", err
-	}
-	return hex.EncodeToString(bytes), nil
 }
