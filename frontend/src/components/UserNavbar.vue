@@ -126,8 +126,8 @@ const user = ref(getSession()?.user || { name: 'Guest' })
 const isOpen = ref(false)
 
 const goToHistory = () => {
-  isOpen.value = false // ปิดเมนูก่อนเปลี่ยนหน้า
-  router.push({ name: 'history' }) // สมมติว่าหน้าตั๋วตั้งชื่อ route ว่า 'history'
+  isOpen.value = false 
+  router.push({ name: 'history' }) 
 }
 
 const handleLogout = () => {
